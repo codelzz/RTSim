@@ -111,7 +111,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = System, DisplayName = "Non-Realtime Workload Factor", meta = (ClampMin = "1", ClampMax = "64"))
 	int32 TilePassesInFullSpeedMode = 8;
 
-	// GPU Lightmass manages a pool for calculations of visible tiles. The pool size should be set based on the size of the
+	// Wireless Signal manages a pool for calculations of visible tiles. The pool size should be set based on the size of the
 	// viewport and how many tiles will be visible on screen at once. Increasing this number increases GPU memory usage.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = System, meta = (ClampMin = "16", ClampMax = "128"))
 	int32 LightmapTilePoolSize = 55;
