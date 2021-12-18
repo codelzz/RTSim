@@ -11,9 +11,5 @@
 		}
 	],
 	"Plugins": [
-		{
-			"Name": "GPULightmass",
-			"Enabled": true
-		}
 	]
 }
