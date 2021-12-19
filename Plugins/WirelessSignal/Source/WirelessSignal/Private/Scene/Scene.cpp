@@ -1678,13 +1678,18 @@ void FScene::RemoveGeometryInstanceFromComponent(ULandscapeComponent* InComponen
 	}
 }
 
+/** 后台时钟 */
 void FScene::BackgroundTick()
 {
+	// 获取渲染状态百分比
 	int32 Percentage = FPlatformAtomics::AtomicRead(&RenderState.Percentage);
 
+	// 若 LightBuildNotification 有效
 	if (WirelessSignal->LightBuildNotification.IsValid())
 	{
+		// 获取 Viewport 实时模式
 		bool bIsViewportNonRealtime = GCurrentLevelEditingViewportClient && !GCurrentLevelEditingViewportClient->IsRealtime();
+		// 若 Viewport 为非实时模式
 		if (bIsViewportNonRealtime)
 		{
 			if (WirelessSignal->Settings->Mode == EWirelessSignalMode::FullBake)
@@ -1698,6 +1703,7 @@ void FScene::BackgroundTick()
 				WirelessSignal->LightBuildNotification->SetText(Text);
 			}
 		}
+		// 若 Viewport 为实时模式
 		else
 		{
 			if (WirelessSignal->Settings->Mode == EWirelessSignalMode::FullBake)
@@ -1712,23 +1718,30 @@ void FScene::BackgroundTick()
 			}
 		}
 	}
+	// 存入系统百分比
 	WirelessSignal->LightBuildPercentage = Percentage;
-
+	
+	// 若渲染未结束 或 渲染模式未 BWYS
 	if (Percentage < 100 || WirelessSignal->Settings->Mode == EWirelessSignalMode::BakeWhatYouSee)
 	{
+		// 若需要体素化Voxelization
 		if (bNeedsVoxelization)
 		{
+			// 获取重要体积
 			GatherImportanceVolumes();
-
+			
+			// 添加体素化指令
 			ENQUEUE_RENDER_COMMAND(BackgroundTickRenderThread)([&RenderState = RenderState](FRHICommandListImmediate&) mutable {
 				RenderState.VolumetricLightmapRenderer->VoxelizeScene();
 				RenderState.VolumetricLightmapRenderer->FrameNumber = 0;
 				RenderState.VolumetricLightmapRenderer->SamplesTaken = 0;
 			});
 
+			// 停用体素化
 			bNeedsVoxelization = false;
 		}
-
+		
+		// 执行渲染后台时钟
 		ENQUEUE_RENDER_COMMAND(BackgroundTickRenderThread)([&RenderState = RenderState](FRHICommandListImmediate&) mutable {
 			RenderState.BackgroundTick();
 		});
@@ -1740,34 +1753,40 @@ void FScene::BackgroundTick()
 	}
 }
 
+/** 场景渲染态::后台时钟 */
 void FSceneRenderState::BackgroundTick()
 {
+	// IrradianceCache？
 	if (IrradianceCache->CurrentRevision != LightmapRenderer->GetCurrentRevision())
 	{
 		IrradianceCache = MakeUnique<FIrradianceCache>(Settings->IrradianceCacheQuality, Settings->IrradianceCacheSpacing, Settings->IrradianceCacheCornerRejection);
 		IrradianceCache->CurrentRevision = LightmapRenderer->GetCurrentRevision();
 	}
-
+	
+	// 表面 Lightmaps 已完成标志
 	bool bHaveFinishedSurfaceLightmaps = false;
 
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(WirelessSignalCountProgress);
 
-		uint64 SamplesTaken = 0;
-		uint64 TotalSamples = 0;
+		uint64 SamplesTaken = 0;	// 样本使用数
+		uint64 TotalSamples = 0;	// 样本总数
 
 		// Count surface lightmap work
+		// 计算表面 lightmap 工作量
 		if (!LightmapRenderer->bOnlyBakeWhatYouSee)
 		{
 			// Count work has been done
+			// 计算已完成工作量
 			for (FLightmapRenderState& Lightmap : LightmapRenderStates.Elements)
 			{
 				for (int32 Y = 0; Y < Lightmap.GetPaddedSizeInTiles().Y; Y++)
 				{
 					for (int32 X = 0; X < Lightmap.GetPaddedSizeInTiles().X; X++)
 					{
+						// 构建 三位虚拟坐标 X,Y,MipLevel
 						FTileVirtualCoordinates VirtualCoordinates(FIntPoint(X, Y), 0);
-
+						
 						TotalSamples += Settings->GISamples * GPreviewLightmapPhysicalTileSize * GPreviewLightmapPhysicalTileSize;
 						SamplesTaken += (Lightmap.DoesTileHaveValidCPUData(VirtualCoordinates, LightmapRenderer->GetCurrentRevision()) ?
 							Settings->GISamples :
@@ -1805,6 +1824,7 @@ void FSceneRenderState::BackgroundTick()
 			}
 		}
 
+		// 当 样本使用数=样本总数 时完成Lightmaps
 		bHaveFinishedSurfaceLightmaps = SamplesTaken == TotalSamples;
 
 		{
@@ -1813,6 +1833,7 @@ void FSceneRenderState::BackgroundTick()
 			TotalSamples += (uint64)VolumetricLightmapRenderer->NumTotalBricks * NumCellsPerBrick * Settings->GISamples * VolumetricLightmapRenderer->GetGISamplesMultiplier();
 		}
 
+		// 渲染进度通过使用样本数占样本总数比例求得
 		int32 IntPercentage = FMath::FloorToInt(SamplesTaken * 100.0 / TotalSamples);
 		IntPercentage = FMath::Max(IntPercentage, 0);
 		// With high number of samples (like 8192) double precision isn't enough to prevent fake 100%s
@@ -1820,13 +1841,16 @@ void FSceneRenderState::BackgroundTick()
 
 		FPlatformAtomics::InterlockedExchange(&Percentage, IntPercentage);
 	}
-
+	
+	// Lightmap 渲染器后台时钟
 	LightmapRenderer->BackgroundTick();
 
 	// If we're in background baking mode, schedule VLM work to be after surface lightmaps
 	bool bIsViewportNonRealtime = GCurrentLevelEditingViewportClient && !GCurrentLevelEditingViewportClient->IsRealtime();
+	// 若 非实时模式 或 (处于实时模式但Lightmap完成时)
 	if (!bIsViewportNonRealtime || (bIsViewportNonRealtime && bHaveFinishedSurfaceLightmaps))
 	{
+		// Volumetric lightmap 渲染器后台时钟
 		VolumetricLightmapRenderer->BackgroundTick();
 	}
 }

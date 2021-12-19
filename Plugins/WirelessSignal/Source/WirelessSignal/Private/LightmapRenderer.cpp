@@ -2508,6 +2508,7 @@ void FLightmapTileDenoiseAsyncTask::DoThreadedWork()
 	FPlatformAtomics::AtomicStore(&TextureData->bDenoisingFinished, 1);
 }
 
+/** ∫ÛÃ® ±÷” */
 void FLightmapRenderer::BackgroundTick()
 {
 	{

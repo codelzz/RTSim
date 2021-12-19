@@ -147,12 +147,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = WirelessSignal)
 	UWirelessSignalSettings* GetSettings();
 
+	// 启动子系统
 	UFUNCTION(BlueprintCallable, Category = WirelessSignal)
 	void Launch();
 
+	// 停止子系统
 	UFUNCTION(BlueprintCallable, Category = WirelessSignal)
 	void Stop();
 
+	// 检测系统是否运行中
 	UFUNCTION(BlueprintCallable, Category = WirelessSignal)
 	bool IsRunning();
 
@@ -162,15 +165,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = WirelessSignal)
 	void EndRecordingVisibleTiles();
 
+	// 获取运行进度
 	UFUNCTION(BlueprintCallable, Category = WirelessSignal)
 	int32 GetPercentage();
 
+	// 设置实时模式
 	UFUNCTION(BlueprintCallable, Category = WirelessSignal)
 	void SetRealtime(bool bInRealtime);
 
+	// 保存结果
 	UFUNCTION(BlueprintCallable, Category = WirelessSignal)
 	void Save();
 
+	// 子系统完成委托
 	/* Accessor for the delegate called when the light build finishes successfully or is cancelled */
 	FSimpleMulticastDelegate& OnLightBuildEnded()
 	{

@@ -31,7 +31,8 @@ public:
 
 	void StartRecordingVisibleTiles();
 	void EndRecordingVisibleTiles();
-
+	
+	// 通知, 显示在编辑器右下方
 	TSharedPtr<SNotificationItem> LightBuildNotification;
 	int32 LightBuildPercentage;
 	
