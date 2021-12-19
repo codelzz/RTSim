@@ -421,6 +421,7 @@ TSharedRef<FExtender> FWirelessSignalEditorModule::OnExtendLevelEditorBuildMenu(
 	return Extender;
 }
 
+/** ´´½¨ Build Menu */
 void FWirelessSignalEditorModule::CreateBuildMenu(FMenuBuilder& Builder)
 {
 	FUIAction ActionOpenWirelessSignalSettingsTab(FExecuteAction::CreateLambda([]() {

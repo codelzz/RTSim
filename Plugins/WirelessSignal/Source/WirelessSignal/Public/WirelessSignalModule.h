@@ -9,8 +9,7 @@
 
 
 /**
- * The public interface to this module.  In most cases, this interface is only public to sibling modules 
- * within this plugin.
+ * 模块的公用接口,在大多数情况下,接口只对兄弟模块开放.
  */
 class IWirelessSignalModule : public IModuleInterface
 {
@@ -18,10 +17,10 @@ class IWirelessSignalModule : public IModuleInterface
 public:
 
 	/**
-	 * Singleton-like access to this module's interface.  This is just for convenience!
-	 * Beware of calling this during the shutdown phase, though.  Your module might have been unloaded already.
-	 *
-	 * @return Returns singleton instance, loading the module on demand if needed
+	 * 以单例(Singleton)形式访问该模块接口(仅为了便于使用). 需要注意的在销毁阶段调用该方法时,该模块
+	 * 可能已被卸载.
+	 * 
+	 * @return Returns 单实例,在模块需要时加载
 	 */
 	static inline IWirelessSignalModule& Get()
 	{
@@ -29,9 +28,9 @@ public:
 	}
 
 	/**
-	 * Checks to see if this module is loaded and ready.  It is only valid to call Get() if IsAvailable() returns true.
+	 * 检查模块是否已加载并就绪. Get() 方法仅在 IsAvailable() 返回true时有效.
 	 *
-	 * @return True if the module is loaded and ready to use
+	 * @return True 若模块已加载并且准备就绪
 	 */
 	static inline bool IsAvailable()
 	{
@@ -46,19 +45,28 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+	// 支持实时预览
 	virtual bool SupportsRealtimePreview() override { return true; }
 
+	// 给 World 分配静态光照系统
 	virtual IStaticLightingSystem* AllocateStaticLightingSystemForWorld(UWorld* InWorld) override;
+	// 给 World 分配基于配置的静态光照系统
 	virtual IStaticLightingSystem* AllocateStaticLightingSystemForWorldWithSettings(UWorld* InWorld, class UWirelessSignalSettings* Settings);
+	// 从 World 移除静态光照系统
 	virtual void RemoveStaticLightingSystemForWorld(UWorld* InWorld) override;
+	// 从 World 获取今天光照系统
 	virtual IStaticLightingSystem* GetStaticLightingSystemForWorld(UWorld* InWorld) override;
+	// 时钟任务
 	virtual void EditorTick() override;
+	// 判断静态光照系统是否执行
 	virtual bool IsStaticLightingSystemRunning() override;
 
 	// Due to limitations in our TMap implementation I cannot use TUniquePtr here
 	// But the WirelessSignalModule is the only owner of all static lighting systems, and all worlds weak refer to the systems
+	// 静态光照系统映射表
 	TMap<UWorld*, class FWirelessSignal*> StaticLightingSystems;
-
+	
+	// 静态光照系统变更事件委托
 	FSimpleMulticastDelegate OnStaticLightingSystemsChanged;
 };
 

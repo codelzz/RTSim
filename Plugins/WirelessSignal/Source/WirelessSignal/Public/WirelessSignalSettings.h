@@ -9,17 +9,17 @@
 UENUM()
 enum class EWirelessSignalMode : uint8
 {
-	FullBake,
-	BakeWhatYouSee,
+	FullBake,		// 烘培所有区域 
+	BakeWhatYouSee,	// 烘培可见区域
 	// BakeSelected  UMETA(DisplayName = "Bake Selected (Not Implemented)")
 };
 
 UENUM()
 enum class EWirelessSignalDenoisingOptions : uint8
 {
-	None,
-	OnCompletion,
-	DuringInteractivePreview
+	None,						// 不降噪
+	OnCompletion,				// 构建完成时降噪
+	DuringInteractivePreview	// 交互预览时降噪
 };
 
 UCLASS(BlueprintType)
@@ -28,26 +28,27 @@ class WIRELESSSIGNAL_API UWirelessSignalSettings : public UObject
 	GENERATED_BODY()
 
 public:
-	// If true, draw a green progress bar within each tile as it renders.
-	// A red bar indicates that First Bounce Ray Guiding is in progress.
-	// Bars may appear black in very bright scenes that have been exposed down.
+
+	// 值为真时, 在每个瓦片上绘制表达渲染进度的绿色进度条
+	// 红色进度条表示 First Bounce Ray Guiding 处理中
+	// 在高亮度场景, 由于曝光影响进度条可能为黑色
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General)
 	bool bShowProgressBars = true;
 
-	// Full Bake mode renders the full lightmap resolution for every object in the scene.
-	// Bake What You See mode renders only the virtual texture tiles for objects in view,
-	// at the mip level determined by the virtual texture system. The camera can be moved to render
-	// more tiles. Bake What You See mode only saves its results if you press the Save button.
+	// Full Bake 模式, 给每个场景中的物体渲染 full lightmap resolution
+	// BWYS 模式, 只烘培视图中可见到的虚拟纹理瓦片,所处的次层级由虚拟纹理系统所决定. 可以通过移动相机
+	// 来渲染更多的区域. BWYS 模式仅在点击保存按钮时保存结果.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General)
 	EWirelessSignalMode Mode;
 
-	// If enabled, denoise the results on the CPU after rendering. On Completion denoises the entire lightmap when it is finished.
-	// During Interactive Preview denoises each tile as it finishes, which is useful for previewing but less efficient.
+	// 降噪开启时, 渲染结果会被 CPU 进行降噪.
+	// On Completion 模式 - 在lightmap 完成后对整个 lightmap 进行降噪.
+	// 在交互预览模式	 - 对每个瓦片完成时降噪,这有助于预览但较为抵消.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General, DisplayName = "Denoise")
 	EWirelessSignalDenoisingOptions DenoisingOptions = EWirelessSignalDenoisingOptions::OnCompletion;
 
-	// Whether to compress lightmap textures.  Disabling lightmap texture compression will reduce artifacts but increase memory and disk size by 4x.
-	// Use caution when disabling this.
+	// 是否压缩 lightmap texture
+	// 不开启时有利于减少下次但会增加4倍内存使用.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General)
 	bool bCompressLightmaps = true;
 
