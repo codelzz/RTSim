@@ -117,6 +117,7 @@ public:
 	void BackgroundTick();
 
 	void BumpRevision();
+	// 获取 当前版本
 	int32 GetCurrentRevision() { return CurrentRevision; }
 
 	int32 FrameNumber = 0;

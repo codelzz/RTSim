@@ -46,33 +46,43 @@ FScene::FScene(FWirelessSignal* InWirelessSignal)
 	InstanceGroups.LinkRenderStateArray(RenderState.InstanceGroupRenderStates);
 	Landscapes.LinkRenderStateArray(RenderState.LandscapeRenderStates);
 
+	// 设置 渲染态
 	RenderState.Settings = Settings;
 
-	ENQUEUE_RENDER_COMMAND(RenderThreadInit)(
-		[&RenderState = RenderState](FRHICommandListImmediate&) mutable
+	ENQUEUE_RENDER_COMMAND(RenderThreadInit)
+		([&RenderState = RenderState](FRHICommandListImmediate&) mutable
 	{
 		RenderState.RenderThreadInit();
 	});
 }
 
+/** 渲染线程初始化*/
 void FSceneRenderState::RenderThreadInit()
 {
+	// 检查是否处于渲染线程
 	check(IsInRenderingThread());
 
+	// 实例化 Lightmap 渲染器
 	LightmapRenderer = MakeUnique<FLightmapRenderer>(this);
+	// 实例化 Volumetric Lightmap 渲染器
 	VolumetricLightmapRenderer = MakeUnique<FVolumetricLightmapRenderer>(this);
+	// 实例化 辐照度缓冲
 	IrradianceCache = MakeUnique<FIrradianceCache>(Settings->IrradianceCacheQuality, Settings->IrradianceCacheSpacing, Settings->IrradianceCacheCornerRejection);
+	// 将辐照度缓冲当前版本 同步为 lightmap 渲染器 当前版本
 	IrradianceCache->CurrentRevision = LightmapRenderer->GetCurrentRevision();
 }
 
+// 获取 网格组件 lightmap 数据
 const FMeshMapBuildData* FScene::GetComponentLightmapData(const UPrimitiveComponent* InComponent, int32 LODIndex)
 {
+	// 若组件为 ULandscapeComponent
 	if (const ULandscapeComponent* LandscapeComponent = Cast<const ULandscapeComponent>(InComponent))
 	{
+		// 且 组件已注册
 		if (RegisteredLandscapeComponentUObjects.Contains(LandscapeComponent))
 		{
 			FLandscapeRef Instance = RegisteredLandscapeComponentUObjects[LandscapeComponent];
-
+			// 返回 LODIndex对应的 网格组件构造数据
 			return Instance->GetMeshMapBuildDataForLODIndex(LODIndex);
 		}
 	}
@@ -98,12 +108,16 @@ const FMeshMapBuildData* FScene::GetComponentLightmapData(const UPrimitiveCompon
 	return nullptr;
 }
 
+// 获取光照组件 lightmap 数据
 const FLightComponentMapBuildData* FScene::GetComponentLightmapData(const ULightComponent* InComponent)
 {
+	// 若光照为 Directional light
 	if (const UDirectionalLightComponent* DirectionalLight = Cast<UDirectionalLightComponent>(InComponent))
 	{
+		// 且组件已注册
 		if (LightScene.RegisteredDirectionalLightComponentUObjects.Contains(DirectionalLight))
 		{
+			// 返回组件对应构建数据
 			return LightScene.RegisteredDirectionalLightComponentUObjects[DirectionalLight]->LightComponentMapBuildData.Get();
 		}
 	}

@@ -2511,6 +2511,7 @@ void FLightmapTileDenoiseAsyncTask::DoThreadedWork()
 /** 后台时钟 */
 void FLightmapRenderer::BackgroundTick()
 {
+	// 降噪处理
 	{
 		TArray<FLightmapTileDenoiseGroup> FilteredDenoiseGroups;
 
