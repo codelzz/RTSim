@@ -247,6 +247,7 @@ void AddLightToLightmap(
 	}
 }
 
+/** ´Ó lightmap ÖÐÒÆ³ý¹âÕÕ */
 void RemoveLightFromLightmap(
 	FLightmap& Lightmap,
 	FLocalLightBuildInfo& Light)
