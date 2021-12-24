@@ -168,10 +168,6 @@ void FWirelessSignal::OnLightComponentRegistered(ULightComponentBase* InComponen
 	{
 		Scene.AddLight(RectLight);
 	}
-	else if (USpotLightComponent* SpotLight = Cast<USpotLightComponent>(InComponent))
-	{
-		Scene.AddLight(SpotLight);
-	}
 	else if (UPointLightComponent* PointLight = Cast<UPointLightComponent>(InComponent))
 	{
 		Scene.AddLight(PointLight);
@@ -195,10 +191,6 @@ void FWirelessSignal::OnLightComponentUnregistered(ULightComponentBase* InCompon
 	else if (URectLightComponent* RectLight = Cast<URectLightComponent>(InComponent))
 	{
 		Scene.RemoveLight(RectLight);
-	}
-	else if (USpotLightComponent* SpotLight = Cast<USpotLightComponent>(InComponent))
-	{
-		Scene.RemoveLight(SpotLight);
 	}
 	else if (UPointLightComponent* PointLight = Cast<UPointLightComponent>(InComponent))
 	{
@@ -228,14 +220,6 @@ void FWirelessSignal::OnStationaryLightChannelReassigned(ULightComponentBase* In
 		{
 			Scene.RemoveLight(RectLight);
 			Scene.AddLight(RectLight);
-		}
-	}
-	else if (USpotLightComponent* SpotLight = Cast<USpotLightComponent>(InComponent))
-	{
-		if (Scene.HasLight(SpotLight))
-		{
-			Scene.RemoveLight(SpotLight);
-			Scene.AddLight(SpotLight);
 		}
 	}
 	else if (UPointLightComponent* PointLight = Cast<UPointLightComponent>(InComponent))

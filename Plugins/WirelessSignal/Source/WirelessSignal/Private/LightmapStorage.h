@@ -204,7 +204,6 @@ public:
 		uint32 RoundRobinIndex = 0;
 		TMap<FDirectionalLightRenderStateRef, int32> RelevantDirectionalLightSampleCount;
 		TMap<FPointLightRenderStateRef, int32> RelevantPointLightSampleCount;
-		TMap<FSpotLightRenderStateRef, int32> RelevantSpotLightSampleCount;
 		TMap<FRectLightRenderStateRef, int32> RelevantRectLightSampleCount;
 	};
 
@@ -244,7 +243,6 @@ public:
 	FGeometryInstanceRenderStateRef GeometryInstanceRef;
 
 	TArray<FPointLightRenderStateRef> RelevantPointLights;
-	TArray<FSpotLightRenderStateRef> RelevantSpotLights;
 	TArray<FRectLightRenderStateRef> RelevantRectLights;
 
 	void AddRelevantLight(FDirectionalLightRenderStateRef Light)
@@ -265,16 +263,6 @@ public:
 	void RemoveRelevantLight(FPointLightRenderStateRef Light)
 	{
 		RelevantPointLights.Remove(Light);
-	}
-
-	void AddRelevantLight(FSpotLightRenderStateRef Light)
-	{
-		RelevantSpotLights.Add(Light);
-	}
-
-	void RemoveRelevantLight(FSpotLightRenderStateRef Light)
-	{
-		RelevantSpotLights.Remove(Light);
 	}
 
 	void AddRelevantLight(FRectLightRenderStateRef Light)

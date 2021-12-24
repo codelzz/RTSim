@@ -128,13 +128,6 @@ const FLightComponentMapBuildData* FScene::GetComponentLightmapData(const ULight
 			return LightScene.RegisteredRectLightComponentUObjects[RectLight]->LightComponentMapBuildData.Get();
 		}
 	}
-	else if (const USpotLightComponent* SpotLight = Cast<USpotLightComponent>(InComponent))
-	{
-		if (LightScene.RegisteredSpotLightComponentUObjects.Contains(SpotLight))
-		{
-			return LightScene.RegisteredSpotLightComponentUObjects[SpotLight]->LightComponentMapBuildData.Get();
-		}
-	}
 	else if (const UPointLightComponent* PointLight = Cast<UPointLightComponent>(InComponent))
 	{
 		if (LightScene.RegisteredPointLightComponentUObjects.Contains(PointLight))
@@ -325,33 +318,6 @@ struct LightTypeInfo<UPointLightComponent>
 };
 
 template<>
-struct LightTypeInfo<USpotLightComponent>
-{
-	using BuildInfoType = FSpotLightBuildInfo;
-	using LightRefType = FSpotLightRef;
-	using RenderStateType = FSpotLightRenderState;
-	using RenderStateRefType = FSpotLightRenderStateRef;
-
-	using LightComponentRegistrationType = TMap<USpotLightComponent*, LightRefType>;
-	inline static LightComponentRegistrationType& GetLightComponentRegistration(FLightScene& LightScene)
-	{
-		return LightScene.RegisteredSpotLightComponentUObjects;
-	}
-
-	using LightArrayType = TLightArray<BuildInfoType>;
-	inline static LightArrayType& GetLightArray(FLightScene& LightScene)
-	{
-		return LightScene.SpotLights;
-	}
-
-	using LightRenderStateArrayType = TLightRenderStateArray<RenderStateType>;
-	inline static LightRenderStateArrayType& GetLightRenderStateArray(FLightSceneRenderState& LightSceneRenderState)
-	{
-		return LightSceneRenderState.SpotLights;
-	}
-};
-
-template<>
 struct LightTypeInfo<URectLightComponent>
 {
 	using BuildInfoType = FRectLightBuildInfo;
@@ -477,7 +443,6 @@ void FScene::AddLight(LightComponentType* PointLightComponent)
 
 template void FScene::AddLight(UDirectionalLightComponent* LightComponent);
 template void FScene::AddLight(UPointLightComponent* LightComponent);
-template void FScene::AddLight(USpotLightComponent* LightComponent);
 template void FScene::AddLight(URectLightComponent* LightComponent);
 
 template<typename LightComponentType>
@@ -568,7 +533,6 @@ void FScene::RemoveLight(LightComponentType* PointLightComponent)
 
 template void FScene::RemoveLight(UDirectionalLightComponent* LightComponent);
 template void FScene::RemoveLight(UPointLightComponent* LightComponent);
-template void FScene::RemoveLight(USpotLightComponent* LightComponent);
 template void FScene::RemoveLight(URectLightComponent* LightComponent);
 
 template<typename LightComponentType>
@@ -579,7 +543,6 @@ bool FScene::HasLight(LightComponentType* PointLightComponent)
 
 template bool FScene::HasLight(UDirectionalLightComponent* LightComponent);
 template bool FScene::HasLight(UPointLightComponent* LightComponent);
-template bool FScene::HasLight(USpotLightComponent* LightComponent);
 template bool FScene::HasLight(URectLightComponent* LightComponent);
 
 void FScene::AddLight(USkyLightComponent* SkyLight)
@@ -789,7 +752,6 @@ void FScene::AddGeometryInstanceFromComponent(UStaticMeshComponent* InComponent)
 	}
 	
 	TArray<int32> RelevantPointLightsToAddOnRenderThread = AddAllPossiblyRelevantLightsToGeometry(LightScene.PointLights, Instance);
-	TArray<int32> RelevantSpotLightsToAddOnRenderThread = AddAllPossiblyRelevantLightsToGeometry(LightScene.SpotLights, Instance);
 	TArray<int32> RelevantRectLightsToAddOnRenderThread = AddAllPossiblyRelevantLightsToGeometry(LightScene.RectLights, Instance);
 
 	ENQUEUE_RENDER_COMMAND(RenderThreadInit)(
@@ -798,7 +760,6 @@ void FScene::AddGeometryInstanceFromComponent(UStaticMeshComponent* InComponent)
 			InstanceLightmapRenderStateInitializers = MoveTemp(InstanceLightmapRenderStateInitializers),
 			&RenderState = RenderState,
 			RelevantPointLightsToAddOnRenderThread,
-			RelevantSpotLightsToAddOnRenderThread,
 			RelevantRectLightsToAddOnRenderThread
 		](FRHICommandListImmediate&) mutable
 	{
@@ -855,11 +816,6 @@ void FScene::AddGeometryInstanceFromComponent(UStaticMeshComponent* InComponent)
 				for (int32 ElementId : RelevantPointLightsToAddOnRenderThread)
 				{
 					LightmapRenderState->AddRelevantLight(FPointLightRenderStateRef(RenderState.LightSceneRenderState.PointLights.Elements[ElementId], RenderState.LightSceneRenderState.PointLights));
-				}
-
-				for (int32 ElementId : RelevantSpotLightsToAddOnRenderThread)
-				{
-					LightmapRenderState->AddRelevantLight(FSpotLightRenderStateRef(RenderState.LightSceneRenderState.SpotLights.Elements[ElementId], RenderState.LightSceneRenderState.SpotLights));
 				}
 
 				for (int32 ElementId : RelevantRectLightsToAddOnRenderThread)
@@ -1055,7 +1011,6 @@ void FScene::AddGeometryInstanceFromComponent(UInstancedStaticMeshComponent* InC
 	}
 
 	TArray<int32> RelevantPointLightsToAddOnRenderThread = AddAllPossiblyRelevantLightsToGeometry(LightScene.PointLights, Instance);
-	TArray<int32> RelevantSpotLightsToAddOnRenderThread = AddAllPossiblyRelevantLightsToGeometry(LightScene.SpotLights, Instance);
 	TArray<int32> RelevantRectLightsToAddOnRenderThread = AddAllPossiblyRelevantLightsToGeometry(LightScene.RectLights, Instance);
 
 	ENQUEUE_RENDER_COMMAND(RenderThreadInit)(
@@ -1064,7 +1019,6 @@ void FScene::AddGeometryInstanceFromComponent(UInstancedStaticMeshComponent* InC
 			InstanceLightmapRenderStateInitializers = MoveTemp(InstanceLightmapRenderStateInitializers),
 			&RenderState = RenderState,
 			RelevantPointLightsToAddOnRenderThread,
-			RelevantSpotLightsToAddOnRenderThread,
 			RelevantRectLightsToAddOnRenderThread
 		](FRHICommandListImmediate&) mutable
 	{
@@ -1126,11 +1080,6 @@ void FScene::AddGeometryInstanceFromComponent(UInstancedStaticMeshComponent* InC
 				for (int32 ElementId : RelevantPointLightsToAddOnRenderThread)
 				{
 					LightmapRenderState->AddRelevantLight(FPointLightRenderStateRef(RenderState.LightSceneRenderState.PointLights.Elements[ElementId], RenderState.LightSceneRenderState.PointLights));
-				}
-
-				for (int32 ElementId : RelevantSpotLightsToAddOnRenderThread)
-				{
-					LightmapRenderState->AddRelevantLight(FSpotLightRenderStateRef(RenderState.LightSceneRenderState.SpotLights.Elements[ElementId], RenderState.LightSceneRenderState.SpotLights));
 				}
 
 				for (int32 ElementId : RelevantRectLightsToAddOnRenderThread)
@@ -1326,7 +1275,6 @@ void FScene::AddGeometryInstanceFromComponent(ULandscapeComponent* InComponent)
 	Initializer.WeightmapSubsectionOffset  = InComponent->WeightmapSubsectionOffset;
 
 	TArray<int32> RelevantPointLightsToAddOnRenderThread = AddAllPossiblyRelevantLightsToGeometry(LightScene.PointLights, Instance);
-	TArray<int32> RelevantSpotLightsToAddOnRenderThread = AddAllPossiblyRelevantLightsToGeometry(LightScene.SpotLights, Instance);
 	TArray<int32> RelevantRectLightsToAddOnRenderThread = AddAllPossiblyRelevantLightsToGeometry(LightScene.RectLights, Instance);
 
 	ENQUEUE_RENDER_COMMAND(RenderThreadInit)(
@@ -1337,7 +1285,6 @@ void FScene::AddGeometryInstanceFromComponent(ULandscapeComponent* InComponent)
 			InstanceLightmapRenderStateInitializers = MoveTemp(InstanceLightmapRenderStateInitializers),
 			&RenderState = RenderState,
 			RelevantPointLightsToAddOnRenderThread,
-			RelevantSpotLightsToAddOnRenderThread,
 			RelevantRectLightsToAddOnRenderThread
 		](FRHICommandListImmediate& RHICmdList) mutable
 	{
@@ -1493,11 +1440,6 @@ void FScene::AddGeometryInstanceFromComponent(ULandscapeComponent* InComponent)
 				for (int32 ElementId : RelevantPointLightsToAddOnRenderThread)
 				{
 					LightmapRenderState->AddRelevantLight(FPointLightRenderStateRef(RenderState.LightSceneRenderState.PointLights.Elements[ElementId], RenderState.LightSceneRenderState.PointLights));
-				}
-
-				for (int32 ElementId : RelevantSpotLightsToAddOnRenderThread)
-				{
-					LightmapRenderState->AddRelevantLight(FSpotLightRenderStateRef(RenderState.LightSceneRenderState.SpotLights.Elements[ElementId], RenderState.LightSceneRenderState.SpotLights));
 				}
 
 				for (int32 ElementId : RelevantRectLightsToAddOnRenderThread)
@@ -2068,17 +2010,6 @@ void FScene::ApplyFinishedLightmapsToWorld()
 			LightBuildData.ShadowMapChannel = PointLight.bStationary ? Light->PreviewShadowMapChannel : INDEX_NONE;
 		}
 
-		for (FSpotLightBuildInfo& SpotLight : LightScene.SpotLights.Elements)
-		{
-			USpotLightComponent* Light = SpotLight.ComponentUObject;
-			check(!SpotLight.bStationary || Light->PreviewShadowMapChannel != INDEX_NONE);
-
-			ULevel* StorageLevel = LightingScenario ? LightingScenario : Light->GetOwner()->GetLevel();
-			UMapBuildDataRegistry* Registry = StorageLevel->GetOrCreateMapBuildData();
-			FLightComponentMapBuildData& LightBuildData = Registry->FindOrAllocateLightBuildData(Light->LightGuid, true);
-			LightBuildData.ShadowMapChannel = SpotLight.bStationary ? Light->PreviewShadowMapChannel : INDEX_NONE;
-		}
-
 		for (FRectLightBuildInfo& RectLight : LightScene.RectLights.Elements)
 		{
 			URectLightComponent* Light = RectLight.ComponentUObject;
@@ -2339,18 +2270,6 @@ void FScene::ApplyFinishedLightmapsToWorld()
 								}
 							}
 
-							for (FSpotLightBuildInfo& SpotLight : LightScene.SpotLights.Elements)
-							{
-								if (!SpotLight.bStationary)
-								{
-									USpotLightComponent* Light = SpotLight.ComponentUObject;
-									if (SpotLight.AffectsBounds(StaticMeshInstances.Elements[InstanceIndex].WorldBounds))
-									{
-										QuantizedLightmapData->LightGuids.Add(Light->LightGuid);
-									}
-								}
-							}
-
 							for (FRectLightBuildInfo& RectLight : LightScene.RectLights.Elements)
 							{
 								if (!RectLight.bStationary)
@@ -2409,12 +2328,6 @@ void FScene::ApplyFinishedLightmapsToWorld()
 							{
 								int32 ElementId = PointLight.GetElementIdChecked();
 								TransencodeShadowMap(LightScene.PointLights.Elements[ElementId], PointLight);
-							}
-
-							for (FSpotLightRenderStateRef& SpotLight : Lightmap.RelevantSpotLights)
-							{
-								int32 ElementId = SpotLight.GetElementIdChecked();
-								TransencodeShadowMap(LightScene.SpotLights.Elements[ElementId], SpotLight);
 							}
 
 							for (FRectLightRenderStateRef& RectLight : Lightmap.RelevantRectLights)
@@ -2649,31 +2562,6 @@ void FScene::ApplyFinishedLightmapsToWorld()
 									ShadowMaps.Add(LightScene.PointLights.Elements[PointLight.GetElementIdChecked()].ComponentUObject, MoveTemp(ShadowMap));
 								}
 
-								for (FSpotLightRenderStateRef& SpotLight : Lightmap.RelevantSpotLights)
-								{
-									check(SpotLight->bStationary);
-									check(SpotLight->ShadowMapChannel != INDEX_NONE);
-									TUniquePtr<FQuantizedShadowSignedDistanceFieldData2D> ShadowMap = MakeUnique<FQuantizedShadowSignedDistanceFieldData2D>(BaseLightMapWidth, BaseLightMapHeight);
-
-									if (RenderIndex != INDEX_NONE)
-									{
-										FIntPoint InstanceTilePos = FIntPoint(RenderIndex % InstancesPerRow, RenderIndex / InstancesPerRow);
-										FIntPoint InstanceTileMin = FIntPoint(InstanceTilePos.X * BaseLightMapWidth, InstanceTilePos.Y * BaseLightMapHeight);
-
-										CopyRectTiled(
-											InstanceTileMin,
-											FIntRect(FIntPoint(0, 0), FIntPoint(BaseLightMapWidth, BaseLightMapHeight)),
-											SrcRowPitchInPixels,
-											DstRowPitchInPixels,
-											[&Lightmap, &ShadowMap, &SpotLight](int32 DstLinearIndex, FIntPoint SrcTilePosition, int32 SrcLinearIndex) mutable
-										{
-											ShadowMap->GetData()[DstLinearIndex] = ConvertToShadowSample(Lightmap.TileStorage[FTileVirtualCoordinates(SrcTilePosition, 0)].CPUTextureData[2]->Data[SrcLinearIndex], SpotLight->ShadowMapChannel);
-										});
-									}
-
-									ShadowMaps.Add(LightScene.SpotLights.Elements[SpotLight.GetElementIdChecked()].ComponentUObject, MoveTemp(ShadowMap));
-								}
-
 								for (FRectLightRenderStateRef& RectLight : Lightmap.RelevantRectLights)
 								{
 									check(RectLight->bStationary);
@@ -2722,18 +2610,6 @@ void FScene::ApplyFinishedLightmapsToWorld()
 									{
 										UPointLightComponent* Light = PointLight.ComponentUObject;
 										if (PointLight.AffectsBounds(InstanceGroup.WorldBounds))
-										{
-											QuantizedLightmapData->LightGuids.Add(Light->LightGuid);
-										}
-									}
-								}
-
-								for (FSpotLightBuildInfo& SpotLight : LightScene.SpotLights.Elements)
-								{
-									if (!SpotLight.bStationary)
-									{
-										USpotLightComponent* Light = SpotLight.ComponentUObject;
-										if (SpotLight.AffectsBounds(InstanceGroup.WorldBounds))
 										{
 											QuantizedLightmapData->LightGuids.Add(Light->LightGuid);
 										}
@@ -2894,18 +2770,6 @@ void FScene::ApplyFinishedLightmapsToWorld()
 								}
 							}
 
-							for (FSpotLightBuildInfo& SpotLight : LightScene.SpotLights.Elements)
-							{
-								if (!SpotLight.bStationary)
-								{
-									USpotLightComponent* Light = SpotLight.ComponentUObject;
-									if (SpotLight.AffectsBounds(Landscapes.Elements[LandscapeIndex].WorldBounds))
-									{
-										QuantizedLightmapData->LightGuids.Add(Light->LightGuid);
-									}
-								}
-							}
-
 							for (FRectLightBuildInfo& RectLight : LightScene.RectLights.Elements)
 							{
 								if (!RectLight.bStationary)
@@ -2964,12 +2828,6 @@ void FScene::ApplyFinishedLightmapsToWorld()
 							{
 								int32 ElementId = PointLight.GetElementIdChecked();
 								TransencodeShadowMap(LightScene.PointLights.Elements[ElementId], PointLight);
-							}
-
-							for (FSpotLightRenderStateRef& SpotLight : Lightmap.RelevantSpotLights)
-							{
-								int32 ElementId = SpotLight.GetElementIdChecked();
-								TransencodeShadowMap(LightScene.SpotLights.Elements[ElementId], SpotLight);
 							}
 
 							for (FRectLightRenderStateRef& RectLight : Lightmap.RelevantRectLights)
@@ -3096,11 +2954,9 @@ void FScene::RemoveAllComponents()
 
 	TArray<UDirectionalLightComponent*> RegisteredDirectionalLightComponents;
 	TArray<UPointLightComponent*> RegisteredPointLightComponents;
-	TArray<USpotLightComponent*> RegisteredSpotLightComponents;
 	TArray<URectLightComponent*> RegisteredRectLightComponents;
 	LightScene.RegisteredDirectionalLightComponentUObjects.GetKeys(RegisteredDirectionalLightComponents);
 	LightScene.RegisteredPointLightComponentUObjects.GetKeys(RegisteredPointLightComponents);
-	LightScene.RegisteredSpotLightComponentUObjects.GetKeys(RegisteredSpotLightComponents);
 	LightScene.RegisteredRectLightComponentUObjects.GetKeys(RegisteredRectLightComponents);
 
 	for (auto Light : RegisteredDirectionalLightComponents)
@@ -3108,10 +2964,6 @@ void FScene::RemoveAllComponents()
 		RemoveLight(Light);
 	}
 	for (auto Light : RegisteredPointLightComponents)
-	{
-		RemoveLight(Light);
-	}
-	for (auto Light : RegisteredSpotLightComponents)
 	{
 		RemoveLight(Light);
 	}

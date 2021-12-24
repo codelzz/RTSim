@@ -105,57 +105,6 @@ void SetupPathTracingLightParameters(
 		DestLight.BoundMax = Center + FVector(Radius, Radius, Radius);
 	}
 
-	for (auto Light : LightScene.SpotLights.Elements)
-	{
-		FPathTracingLight& DestLight = Lights.AddDefaulted_GetRef();
-
-		DestLight.Position = Light.Position;
-		DestLight.Normal = Light.Direction;
-		DestLight.dPdu = FVector::CrossProduct(Light.Tangent, Light.Direction);
-		DestLight.dPdv = Light.Tangent;
-		DestLight.Color = FVector(Light.Color);
-		DestLight.Dimensions = FVector(Light.SourceRadius, Light.SourceSoftRadius, Light.SourceLength);
-		DestLight.Shaping = Light.SpotAngles;
-		DestLight.Attenuation = 1.0f / Light.AttenuationRadius;
-		DestLight.FalloffExponent = Light.FalloffExponent;
-
-		if (Light.IESTexture)
-		{
-			DestLight.IESTextureSlice = IESLightProfilesMap.FindOrAdd(Light.IESTexture, IESLightProfilesMap.Num());
-		}
-		else
-		{
-			DestLight.IESTextureSlice = INDEX_NONE;
-		}
-
-		DestLight.Flags = PATHTRACER_FLAG_TRANSMISSION_MASK;
-		DestLight.Flags |= PATHTRACER_FLAG_LIGHTING_CHANNEL_MASK;
-		DestLight.Flags |= PATHTRACER_FLAG_CAST_SHADOW_MASK;
-		DestLight.Flags |= Light.IsInverseSquared ? 0 : PATHTRACER_FLAG_NON_INVERSE_SQUARE_FALLOFF_MASK;
-		DestLight.Flags |= Light.bStationary ? PATHTRACER_FLAG_STATIONARY_MASK : 0;
-		DestLight.Flags |= PATHTRACING_LIGHT_SPOT;
-
-		float Radius = Light.AttenuationRadius;
-		FVector Center = DestLight.Position;
-		FVector Normal = DestLight.Normal;
-		FVector Disc = FVector(
-			FMath::Sqrt(FMath::Clamp(1 - Normal.X * Normal.X, 0.0f, 1.0f)),
-			FMath::Sqrt(FMath::Clamp(1 - Normal.Y * Normal.Y, 0.0f, 1.0f)),
-			FMath::Sqrt(FMath::Clamp(1 - Normal.Z * Normal.Z, 0.0f, 1.0f))
-		);
-		// box around ray from light center to tip of the cone
-		FVector Tip = Center + Normal * Radius;
-		DestLight.BoundMin = Center.ComponentMin(Tip);
-		DestLight.BoundMax = Center.ComponentMax(Tip);
-		// expand by disc around the farthest part of the cone
-
-		float CosOuter = Light.SpotAngles.X;
-		float SinOuter = FMath::Sqrt(1.0f - CosOuter * CosOuter);
-
-		DestLight.BoundMin = DestLight.BoundMin.ComponentMin(Center + Radius * (Normal * CosOuter - Disc * SinOuter));
-		DestLight.BoundMax = DestLight.BoundMax.ComponentMax(Center + Radius * (Normal * CosOuter + Disc * SinOuter));
-	}
-
 	for (auto Light : LightScene.RectLights.Elements)
 	{
 		FPathTracingLight& DestLight = Lights.AddDefaulted_GetRef();
