@@ -5,7 +5,6 @@
 #include "EntityArray.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
-#include "Components/SpotLightComponent.h"
 #include "Components/RectLightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "GeometryInterface.h"
@@ -163,24 +162,6 @@ struct FPointLightBuildInfo : public FLocalLightBuildInfo
 
 using FPointLightRef = TEntityArray<FPointLightBuildInfo>::EntityRefType;
 
-struct FSpotLightBuildInfo : public FLocalLightBuildInfo
-{
-	FSpotLightBuildInfo(USpotLightComponent* ComponentUObject);
-
-	USpotLightComponent* ComponentUObject = nullptr;
-
-	FVector Position;
-	FVector Direction;
-	float InnerConeAngle;
-	float OuterConeAngle;
-	float AttenuationRadius;
-
-	virtual ULightComponent* GetComponentUObject() const override { return ComponentUObject; }
-	virtual bool AffectsBounds(const FBoxSphereBounds& InBounds) const override;
-};
-
-using FSpotLightRef = TEntityArray<FSpotLightBuildInfo>::EntityRefType;
-
 struct FRectLightBuildInfo : public FLocalLightBuildInfo
 {
 	FRectLightBuildInfo(URectLightComponent* ComponentUObject);
@@ -230,29 +211,6 @@ struct FPointLightRenderState : public FLocalLightRenderState
 };
 
 using FPointLightRenderStateRef = TEntityArray<FPointLightRenderState>::EntityRefType;
-
-struct FSpotLightRenderState : public FLocalLightRenderState
-{
-	FSpotLightRenderState(USpotLightComponent* ComponentUObject);
-
-	FVector Position;
-	FVector Direction;
-	FVector Tangent;
-	FVector2D SpotAngles;
-	FLinearColor Color;
-	float AttenuationRadius;
-	float SourceRadius;
-	float SourceSoftRadius;
-	float SourceLength;
-	float FalloffExponent;
-	bool IsInverseSquared;
-	FTexture* IESTexture;
-
-
-	virtual FLightShaderParameters GetLightShaderParameters() const override;
-};
-
-using FSpotLightRenderStateRef = TEntityArray<FSpotLightRenderState>::EntityRefType;
 
 struct FRectLightRenderState : public FLocalLightRenderState
 {
@@ -348,12 +306,10 @@ struct FLightScene
 	TOptional<FSkyLightBuildInfo> SkyLight;
 	TLightArray<FDirectionalLightBuildInfo> DirectionalLights;
 	TLightArray<FPointLightBuildInfo> PointLights;
-	TLightArray<FSpotLightBuildInfo> SpotLights;
 	TLightArray<FRectLightBuildInfo> RectLights;
 
 	TMap<UDirectionalLightComponent*, FDirectionalLightRef> RegisteredDirectionalLightComponentUObjects;
 	TMap<UPointLightComponent*, FPointLightRef> RegisteredPointLightComponentUObjects;
-	TMap<USpotLightComponent*, FSpotLightRef> RegisteredSpotLightComponentUObjects;
 	TMap<URectLightComponent*, FRectLightRef> RegisteredRectLightComponentUObjects;
 };
 
@@ -362,7 +318,6 @@ struct FLightSceneRenderState
 	TOptional<FSkyLightRenderState> SkyLight;
 	TLightRenderStateArray<FDirectionalLightRenderState> DirectionalLights;
 	TLightRenderStateArray<FPointLightRenderState> PointLights;
-	TLightRenderStateArray<FSpotLightRenderState> SpotLights;
 	TLightRenderStateArray<FRectLightRenderState> RectLights;
 };
 
@@ -384,16 +339,6 @@ static uint32 GetTypeHash(const WirelessSignal::FPointLightRenderState& O)
 }
 
 static uint32 GetTypeHash(const WirelessSignal::FPointLightRenderStateRef& Ref)
-{
-	return GetTypeHash(Ref.GetReference_Unsafe());
-}
-
-static uint32 GetTypeHash(const WirelessSignal::FSpotLightRenderState& O)
-{
-	return HashCombine(GetTypeHash(O.Tangent), HashCombine(GetTypeHash(O.SpotAngles), HashCombine(GetTypeHash(O.Direction), HashCombine(GetTypeHash(O.AttenuationRadius), HashCombine(GetTypeHash(O.ShadowMapChannel), HashCombine(GetTypeHash(O.SourceRadius), HashCombine(GetTypeHash(O.Color), HashCombine(GetTypeHash(O.Position), GetTypeHash(O.bStationary)))))))));
-}
-
-static uint32 GetTypeHash(const WirelessSignal::FSpotLightRenderStateRef& Ref)
 {
 	return GetTypeHash(Ref.GetReference_Unsafe());
 }
