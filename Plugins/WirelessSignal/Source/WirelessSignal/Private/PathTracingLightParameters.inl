@@ -25,6 +25,7 @@ void SetupPathTracingLightParameters(
 		PassParameters->SkylightInvResolution = 0;
 		PassParameters->SkylightMipCount = 0;
 	}
+	
 
 
 	for (auto Light : LightScene.DirectionalLights.Elements)

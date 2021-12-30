@@ -55,7 +55,7 @@ Texture2D<float4> GBufferWorldNormal;
 Texture2D<float4> GBufferShadingNormal;
 RWTexture2D<float4> IrradianceAndSampleCount;
 RWTexture2D<float4> SHDirectionality;
-RWTexture2D<float4> SHCorrectionAndStationarySkyLightBentNormal;
+// RWTexture2D<float4> SHCorrectionAndStationarySkyLightBentNormal;
 
 RWTexture2D<float4> OutputTileAtlas;
 
@@ -826,7 +826,7 @@ void LightmapPathTracingMainRG()
 						{
 							IrradianceAndSampleCount[TexelIndexInPool]= float4(0, 0, 0, 0);
 							SHDirectionality[TexelIndexInPool] = float4(0, 0, 0, 0);
-							SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x = 0;
+						//	SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x = 0;
 						}
 					#endif
 					
@@ -838,7 +838,7 @@ void LightmapPathTracingMainRG()
 						
 						IrradianceAndSampleCount[TexelIndexInPool].rgb += float3(RadianceValue * TangentZ / PI);
 						SHDirectionality[TexelIndexInPool] += SH.L2SHCoefficients;					
-						SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x += SH.Correction;
+				//		SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x += SH.Correction;
 					}
 					
 					{
@@ -849,7 +849,7 @@ void LightmapPathTracingMainRG()
 						
 						IrradianceAndSampleCount[TexelIndexInPool].rgb += float3(DirectLightingNEERadianceValue * TangentZ / PI);
 						SHDirectionality[TexelIndexInPool] += SH.L2SHCoefficients;					
-						SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x += SH.Correction;
+				//		SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x += SH.Correction;
 					}
 				}
 			}
@@ -888,7 +888,7 @@ void LightmapPathTracingMainRG()
 			);
 			
 			SHDirectionality[TexelIndexInPool] = float4(1, 0, 0, 0);					
-			SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x = 1;
+	//		SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x = 1;
 		}
 	#endif
 
@@ -902,7 +902,7 @@ void LightmapPathTracingMainRG()
 		IrradianceAndSampleCount[TexelIndexInPool].a = asfloat(1);
 		
 		SHDirectionality[TexelIndexInPool] = float4(1, 0, 0, 0);					
-		SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x = 1;
+//		SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x = 1;
 	}
 #endif
 }

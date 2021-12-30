@@ -5,7 +5,7 @@
 #include "WirelessSignalCommon.h"
 #include "ShaderParameterStruct.h"
 #include "GlobalShader.h"
-#include "RayTracing/RayTracingSkyLight.h"
+// #include "RayTracing/RayTracingSkyLight.h"
 #include "SceneView.h"
 #include "RayTracing/RayTracingMaterialHitShaders.h"
 #include "IrradianceCaching.h"
@@ -74,7 +74,7 @@ class FLightmapPathTracingRGS : public FGlobalShader
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<float4>, GBufferShadingNormal)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, IrradianceAndSampleCount)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, SHDirectionality)
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, SHCorrectionAndStationarySkyLightBentNormal)
+		// SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, SHCorrectionAndStationarySkyLightBentNormal)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<uint>, RayGuidingLuminance)
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<float>, RayGuidingCDFX)
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<float>, RayGuidingCDFY)
@@ -121,7 +121,7 @@ class FVolumetricLightmapPathTracingRGS : public FGlobalShader
 	}
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
-		SHADER_PARAMETER(uint32, FrameNumber)
+		SHADER_PARAMETER(uint32, FrameNumber)	// 
 		SHADER_PARAMETER(FVector4, VolumeMin)
 		SHADER_PARAMETER(FVector4, VolumeSize)
 		SHADER_PARAMETER(FIntVector, IndirectionTextureDim)
