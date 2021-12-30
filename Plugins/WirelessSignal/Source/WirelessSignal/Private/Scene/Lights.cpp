@@ -4,20 +4,6 @@
 #include "RenderGraphBuilder.h"
 #include "ReflectionEnvironment.h"
 
-RENDERER_API void PrepareSkyTexture_Internal(
-	FRDGBuilder& GraphBuilder,
-	FReflectionUniformParameters& Parameters,
-	uint32 Size,
-	FLinearColor SkyColor,
-	bool UseMISCompensation,
-
-	// Out
-	FRDGTextureRef& SkylightTexture,
-	FRDGTextureRef& SkylightPdf,
-	float& SkylightInvResolution,
-	int32& SkylightMipCount
-);
-
 namespace WirelessSignal
 {
 
@@ -135,45 +121,6 @@ FLightShaderParameters FPointLightRenderState::GetLightShaderParameters() const
 	LightParameters.SourceRadius = SourceRadius;
 
 	return LightParameters;
-}
-
-void FSkyLightRenderState::PrepareSkyTexture(FRHICommandListImmediate& RHICmdList)
-{
-	FRDGBuilder GraphBuilder(RHICmdList);
-
-	FRDGTextureRef SkylightTexture;
-	FRDGTextureRef SkylightPdf;
-
-	FReflectionUniformParameters Parameters;
-	Parameters.SkyLightCubemap = ProcessedTexture;
-	Parameters.SkyLightCubemapSampler = ProcessedTextureSampler;
-	Parameters.SkyLightBlendDestinationCubemap = ProcessedTexture;
-	Parameters.SkyLightBlendDestinationCubemapSampler = ProcessedTextureSampler;
-	Parameters.SkyLightParameters = FVector4(1, 1, 0, 0);
-
-	FLinearColor SkyColor = Color;
-	// since we are resampled into an octahedral layout, we multiply the cubemap resolution by 2 to get roughly the same number of texels
-	uint32 Size = FMath::RoundUpToPowerOfTwo(2 * TextureDimensions.X);
-
-	const bool UseMISCompensation = true;
-
-	PrepareSkyTexture_Internal(
-		GraphBuilder,
-		Parameters,
-		Size,
-		SkyColor,
-		UseMISCompensation,
-		// Out
-		SkylightTexture,
-		SkylightPdf,
-		SkylightInvResolution,
-		SkylightMipCount
-	);
-
-	GraphBuilder.QueueTextureExtraction(SkylightTexture, &PathTracingSkylightTexture);
-	GraphBuilder.QueueTextureExtraction(SkylightPdf, &PathTracingSkylightPdf);
-
-	GraphBuilder.Execute();
 }
 
 }

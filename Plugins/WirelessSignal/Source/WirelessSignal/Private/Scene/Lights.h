@@ -5,11 +5,8 @@
 #include "EntityArray.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
-#include "Components/SkyLightComponent.h"
 #include "GeometryInterface.h"
 #include "Engine/MapBuildDataRegistry.h"
-
-class FSkyLightImportanceSamplingData;
 
 struct FLightShaderConstants
 {
@@ -196,29 +193,6 @@ struct FPointLightRenderState : public FLocalLightRenderState
 
 using FPointLightRenderStateRef = TEntityArray<FPointLightRenderState>::EntityRefType;
 
-struct FSkyLightRenderState
-{
-	bool bStationary = false;
-	FLinearColor Color;
-	FTextureRHIRef ProcessedTexture;
-	FSamplerStateRHIRef ProcessedTextureSampler;
-	FIntPoint TextureDimensions;
-	FSHVectorRGB3 IrradianceEnvironmentMap;
-	FRWBufferStructured SkyIrradianceEnvironmentMap;
-
-	// New sky dome
-	void PrepareSkyTexture(FRHICommandListImmediate& RHICmdList);
-	float SkylightInvResolution;
-	int32 SkylightMipCount;
-	TRefCountPtr<IPooledRenderTarget> PathTracingSkylightTexture;
-	TRefCountPtr<IPooledRenderTarget> PathTracingSkylightPdf;
-};
-
-struct FSkyLightBuildInfo
-{
-	USkyLightComponent* ComponentUObject = nullptr;
-};
-
 class FLightArrayBase
 {
 public:
@@ -267,7 +241,6 @@ public:
 
 struct FLightScene
 {
-	TOptional<FSkyLightBuildInfo> SkyLight;
 	TLightArray<FDirectionalLightBuildInfo> DirectionalLights;
 	TLightArray<FPointLightBuildInfo> PointLights;
 
@@ -277,7 +250,6 @@ struct FLightScene
 
 struct FLightSceneRenderState
 {
-	TOptional<FSkyLightRenderState> SkyLight;
 	TLightRenderStateArray<FDirectionalLightRenderState> DirectionalLights;
 	TLightRenderStateArray<FPointLightRenderState> PointLights;
 };

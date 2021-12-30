@@ -17,6 +17,8 @@ void SetupPathTracingLightParameters(
 {
 	TArray<FPathTracingLight> Lights;
 
+	// we didn't introduce sky light, hence, it allow false
+	/*
 	if (LightScene.SkyLight.IsSet())
 	{
 		FPathTracingLight& DestLight = Lights.AddDefaulted_GetRef();
@@ -34,7 +36,7 @@ void SetupPathTracingLightParameters(
 		PassParameters->SkylightInvResolution = LightScene.SkyLight->SkylightInvResolution;
 		PassParameters->SkylightMipCount = LightScene.SkyLight->SkylightMipCount;
 	}
-	else
+	else*/
 	{
 		PassParameters->SkylightTexture = GraphBuilder.RegisterExternalTexture(GSystemTextures.BlackDummy);
 		PassParameters->SkylightTextureSampler = TStaticSamplerState<SF_Bilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();

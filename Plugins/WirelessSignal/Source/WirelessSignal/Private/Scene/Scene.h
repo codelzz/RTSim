@@ -142,9 +142,6 @@ public:
 	void AddGeometryInstanceFromComponent(ULandscapeComponent* InComponent);
 	void RemoveGeometryInstanceFromComponent(ULandscapeComponent* InComponent);
 
-	void AddLight(USkyLightComponent* SkyLight);
-	void RemoveLight(USkyLightComponent* SkyLight);
-
 	template<typename LightComponentType>
 	void AddLight(LightComponentType* Light);
 

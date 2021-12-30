@@ -567,12 +567,14 @@ void FSceneRenderState::SetupRayTracingScene(int32 LODIndex)
 				UnusedVolumeBounds,
 				TVC_MAX,
 				*View.CachedViewUniformShaderParameters);
-
+			
+			// skylight is out of scope
+			/*
 			if (LightSceneRenderState.SkyLight.IsSet())
 			{
 				View.CachedViewUniformShaderParameters->SkyIrradianceEnvironmentMap = LightSceneRenderState.SkyLight->SkyIrradianceEnvironmentMap.SRV;
 			}
-			else
+			else*/
 			{
 				View.CachedViewUniformShaderParameters->SkyIrradianceEnvironmentMap = GIdentityPrimitiveBuffer.SkyIrradianceEnvironmentMapSRV;
 			}
