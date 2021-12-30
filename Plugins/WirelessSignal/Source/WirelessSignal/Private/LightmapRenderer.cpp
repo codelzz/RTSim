@@ -1521,8 +1521,6 @@ void FLightmapRenderer::Finalize(FRHICommandListImmediate& RHICmdList)
 					// Clear stationary light sample states
 					Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantDirectionalLightSampleCount.Empty();
 					Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantPointLightSampleCount.Empty();
-					Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantSpotLightSampleCount.Empty();
-					Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantRectLightSampleCount.Empty();
 
 					for (FDirectionalLightRenderState& DirectionalLight : Scene->LightSceneRenderState.DirectionalLights.Elements)
 					{
@@ -1539,19 +1537,6 @@ void FLightmapRenderer::Finalize(FRHICommandListImmediate& RHICmdList)
 						Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantPointLightSampleCount.Add(PointLight, 0);
 					}
 
-					for (FSpotLightRenderStateRef& SpotLight : Tile.RenderState->RelevantSpotLights)
-					{
-						check(SpotLight->bStationary);
-
-						Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantSpotLightSampleCount.Add(SpotLight, 0);
-					}
-
-					for (FRectLightRenderStateRef& RectLight : Tile.RenderState->RelevantRectLights)
-					{
-						check(RectLight->bStationary);
-
-						Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantRectLightSampleCount.Add(RectLight, 0);
-					}
 				}
 
 				{
@@ -1956,28 +1941,6 @@ void FLightmapRenderer::Finalize(FRHICommandListImmediate& RHICmdList)
 							}
 						}
 
-						for (auto& Pair : Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantSpotLightSampleCount)
-						{
-							if (Pair.Value < Scene->Settings->StationaryLightShadowSamples)
-							{
-								UnconvergedLightTypeArray.Add(2);
-								UnconvergedChannelIndexArray.Add(Pair.Key->ShadowMapChannel);
-								UnconvergedLightShaderParameterArray.Add(FLightShaderConstants(Pair.Key->GetLightShaderParameters()));
-								UnconvergedLightSampleIndexArray.Add(Pair.Value);
-							}
-						}
-
-						for (auto& Pair : Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantRectLightSampleCount)
-						{
-							if (Pair.Value < Scene->Settings->StationaryLightShadowSamples)
-							{
-								UnconvergedLightTypeArray.Add(3);
-								UnconvergedChannelIndexArray.Add(Pair.Key->ShadowMapChannel);
-								UnconvergedLightShaderParameterArray.Add(FLightShaderConstants(Pair.Key->GetLightShaderParameters()));
-								UnconvergedLightSampleIndexArray.Add(Pair.Value);
-							}
-						}
-
 						int32 PickedLightIndex = Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RoundRobinIndex % UnconvergedLightTypeArray.Num();
 
 						LightTypeArray.Add(UnconvergedLightTypeArray[PickedLightIndex]);
@@ -2006,34 +1969,6 @@ void FLightmapRenderer::Finalize(FRHICommandListImmediate& RHICmdList)
 							}
 
 							for (auto& Pair : Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantPointLightSampleCount)
-							{
-								if (Pair.Value < Scene->Settings->StationaryLightShadowSamples)
-								{
-									if (LightIndex == PickedLightIndex)
-									{
-										Pair.Value++;
-										bFoundPickedLight = true;
-										break;
-									}
-									LightIndex++;
-								}
-							}
-
-							for (auto& Pair : Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantSpotLightSampleCount)
-							{
-								if (Pair.Value < Scene->Settings->StationaryLightShadowSamples)
-								{
-									if (LightIndex == PickedLightIndex)
-									{
-										Pair.Value++;
-										bFoundPickedLight = true;
-										break;
-									}
-									LightIndex++;
-								}
-							}
-
-							for (auto& Pair : Tile.RenderState->RetrieveTileRelevantLightSampleState(Tile.VirtualCoordinates).RelevantRectLightSampleCount)
 							{
 								if (Pair.Value < Scene->Settings->StationaryLightShadowSamples)
 								{

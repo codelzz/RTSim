@@ -204,8 +204,6 @@ public:
 		uint32 RoundRobinIndex = 0;
 		TMap<FDirectionalLightRenderStateRef, int32> RelevantDirectionalLightSampleCount;
 		TMap<FPointLightRenderStateRef, int32> RelevantPointLightSampleCount;
-		TMap<FSpotLightRenderStateRef, int32> RelevantSpotLightSampleCount;
-		TMap<FRectLightRenderStateRef, int32> RelevantRectLightSampleCount;
 	};
 
 	FTileRelevantLightSampleCountState& RetrieveTileRelevantLightSampleState(FTileVirtualCoordinates Coords)
@@ -244,8 +242,6 @@ public:
 	FGeometryInstanceRenderStateRef GeometryInstanceRef;
 
 	TArray<FPointLightRenderStateRef> RelevantPointLights;
-	TArray<FSpotLightRenderStateRef> RelevantSpotLights;
-	TArray<FRectLightRenderStateRef> RelevantRectLights;
 
 	void AddRelevantLight(FDirectionalLightRenderStateRef Light)
 	{
@@ -265,26 +261,6 @@ public:
 	void RemoveRelevantLight(FPointLightRenderStateRef Light)
 	{
 		RelevantPointLights.Remove(Light);
-	}
-
-	void AddRelevantLight(FSpotLightRenderStateRef Light)
-	{
-		RelevantSpotLights.Add(Light);
-	}
-
-	void RemoveRelevantLight(FSpotLightRenderStateRef Light)
-	{
-		RelevantSpotLights.Remove(Light);
-	}
-
-	void AddRelevantLight(FRectLightRenderStateRef Light)
-	{
-		RelevantRectLights.Add(Light);
-	}
-
-	void RemoveRelevantLight(FRectLightRenderStateRef Light)
-	{
-		RelevantRectLights.Remove(Light);
 	}
 
 	virtual FLightInteraction GetInteraction(const class FLightSceneProxy* LightSceneProxy) const override
