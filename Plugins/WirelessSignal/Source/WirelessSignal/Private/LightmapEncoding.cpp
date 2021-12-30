@@ -181,7 +181,6 @@ void QuantizeLightSamples(
 
 		DestCoefficients.Coverage = SourceSample.bIsMapped ? 255 : 0;
 
-		DestCoefficients.SkyOcclusion[3] = (uint8)FMath::Clamp<int32>(FMath::RoundToInt(FMath::Sqrt(BentNormalLength) * 255.0f), 0, 255);
 		// Sqrt to allocate more precision near 0
 		DestCoefficients.AOMaterialMask = (uint8)FMath::Clamp<int32>(FMath::RoundToInt(FMath::Sqrt(SourceSample.AOMaterialMask) * 255.0f), 0, 255);
 
