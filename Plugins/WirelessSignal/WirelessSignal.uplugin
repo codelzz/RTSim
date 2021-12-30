@@ -1,0 +1,36 @@
+{
+	"FileVersion" : 3,
+	"Version" : 1,
+	"VersionName" : "1.0",
+	"FriendlyName" : "Wireless Signal",
+	"Description" : "Static wireless signal propagataion building & previewing system using DXR",
+	"Category" : "Editor",
+	"CreatedBy" : "Zhongzheng Lai",
+	"CreatedByURL" : "",
+	"DocsURL" : "",
+	"MarketplaceURL" : "",
+	"SupportURL" : "",
+	"EnabledByDefault" : true,
+	"CanContainContent" : true,
+	"IsBetaVersion" : false,
+	"Installed" : false,
+	"Modules" :
+	[
+		{
+			"Name" : "WirelessSignal",
+			"Type" : "UncookedOnly",
+			"LoadingPhase" : "PostConfigInit",
+			"WhitelistPlatforms": [
+				"Win64"
+			]
+		},		
+		{
+			"Name" : "WirelessSignalEditor",
+			"Type" : "Editor",
+			"LoadingPhase" : "Default",
+			"WhitelistPlatforms": [
+				"Win64"
+			]
+		}
+	]
+}
