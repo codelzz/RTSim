@@ -4,7 +4,6 @@
 #include "ComponentRecreateRenderStateContext.h"
 #include "EngineModule.h"
 #include "Misc/ScopedSlowTask.h"
-#include "Components/SkyLightComponent.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Async/Async.h"
@@ -168,10 +167,6 @@ void FWirelessSignal::OnLightComponentRegistered(ULightComponentBase* InComponen
 	{
 		Scene.AddLight(PointLight);
 	}
-	else if (USkyLightComponent* SkyLight = Cast<USkyLightComponent>(InComponent))
-	{
-		Scene.AddLight(SkyLight);
-	}
 }
 
 void FWirelessSignal::OnLightComponentUnregistered(ULightComponentBase* InComponent)
@@ -187,10 +182,6 @@ void FWirelessSignal::OnLightComponentUnregistered(ULightComponentBase* InCompon
 	else if (UPointLightComponent* PointLight = Cast<UPointLightComponent>(InComponent))
 	{
 		Scene.RemoveLight(PointLight);
-	}
-	else if (USkyLightComponent* SkyLight = Cast<USkyLightComponent>(InComponent))
-	{
-		Scene.RemoveLight(SkyLight);
 	}
 }
 
