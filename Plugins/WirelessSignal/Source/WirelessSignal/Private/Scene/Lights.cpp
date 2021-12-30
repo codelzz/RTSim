@@ -101,48 +101,6 @@ FPointLightRenderState::FPointLightRenderState(UPointLightComponent* PointLightC
 	IESTexture = PointLightComponent->IESTexture ? PointLightComponent->IESTexture->GetResource() : nullptr;
 }
 
-
-
-
-FRectLightBuildInfo::FRectLightBuildInfo(URectLightComponent* RectLightComponent)
-{
-	const bool bCastStationaryShadows = RectLightComponent->CastShadows && RectLightComponent->CastStaticShadows && !RectLightComponent->HasStaticLighting();
-
-	ComponentUObject = RectLightComponent;
-	bStationary = bCastStationaryShadows;
-	ShadowMapChannel = RectLightComponent->PreviewShadowMapChannel;
-	LightComponentMapBuildData = MakeUnique<FLightComponentMapBuildData>();
-	LightComponentMapBuildData->ShadowMapChannel = RectLightComponent->PreviewShadowMapChannel;
-	Position = RectLightComponent->GetLightPosition();
-	AttenuationRadius = RectLightComponent->AttenuationRadius;
-}
-
-bool FRectLightBuildInfo::AffectsBounds(const FBoxSphereBounds& InBounds) const
-{
-	return (InBounds.Origin - Position).SizeSquared() <= FMath::Square(AttenuationRadius + InBounds.SphereRadius);
-}
-
-FRectLightRenderState::FRectLightRenderState(URectLightComponent* RectLightComponent)
-{
-	const bool bCastStationaryShadows = RectLightComponent->CastShadows && RectLightComponent->CastStaticShadows && !RectLightComponent->HasStaticLighting();
-
-	bStationary = bCastStationaryShadows;
-	Color = RectLightComponent->GetColoredLightBrightness();
-	Position = RectLightComponent->GetLightPosition();
-	Direction = RectLightComponent->GetDirection();
-	{
-		FMatrix LightToWorld = RectLightComponent->GetComponentTransform().ToMatrixNoScale();
-		Tangent = FVector(LightToWorld.M[2][0], LightToWorld.M[2][1], LightToWorld.M[2][2]);
-	}
-	SourceWidth = RectLightComponent->SourceWidth;
-	SourceHeight = RectLightComponent->SourceHeight;
-	BarnDoorAngle = FMath::Clamp(RectLightComponent->BarnDoorAngle, 0.f, GetRectLightBarnDoorMaxAngle());
-	BarnDoorLength = FMath::Max(0.1f, RectLightComponent->BarnDoorLength);
-	AttenuationRadius = RectLightComponent->AttenuationRadius;
-	ShadowMapChannel = RectLightComponent->PreviewShadowMapChannel;
-	IESTexture = RectLightComponent->IESTexture ? RectLightComponent->IESTexture->GetResource() : nullptr;
-}
-
 FLightShaderParameters FDirectionalLightRenderState::GetLightShaderParameters() const
 {
 	FLightShaderParameters LightParameters;
@@ -175,29 +133,6 @@ FLightShaderParameters FPointLightRenderState::GetLightShaderParameters() const
 	LightParameters.InvRadius = 1.0f / AttenuationRadius;
 	LightParameters.Color = FVector(Color);
 	LightParameters.SourceRadius = SourceRadius;
-
-	return LightParameters;
-}
-
-
-FLightShaderParameters FRectLightRenderState::GetLightShaderParameters() const
-{
-	FLightShaderParameters LightParameters;
-
-	LightParameters.Position = Position;
-	LightParameters.Direction = -Direction;
-	LightParameters.Tangent = Tangent;
-	LightParameters.InvRadius = 1.0f / AttenuationRadius;
-
-	FLinearColor LightColor = Color;
-	LightColor /= 0.5f * SourceWidth * SourceHeight;
-	LightParameters.Color = FVector(LightColor);
-
-	LightParameters.SourceRadius = SourceWidth * 0.5f;
-	LightParameters.SourceLength = SourceHeight * 0.5f;
-	LightParameters.SourceTexture =  GWhiteTexture->TextureRHI;
-	LightParameters.RectLightBarnCosAngle = FMath::Cos(FMath::DegreesToRadians(BarnDoorAngle));
-	LightParameters.RectLightBarnLength = BarnDoorLength;
 
 	return LightParameters;
 }

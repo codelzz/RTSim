@@ -105,53 +105,6 @@ void SetupPathTracingLightParameters(
 		DestLight.BoundMax = Center + FVector(Radius, Radius, Radius);
 	}
 
-	for (auto Light : LightScene.RectLights.Elements)
-	{
-		FPathTracingLight& DestLight = Lights.AddDefaulted_GetRef();
-
-		DestLight.Position = Light.Position;
-		DestLight.Normal = Light.Direction;
-		DestLight.dPdu = FVector::CrossProduct(Light.Tangent, -Light.Direction);
-		DestLight.dPdv = Light.Tangent;
-
-		FLinearColor LightColor = Light.Color;
-		LightColor /= 0.5f * Light.SourceWidth * Light.SourceHeight;
-		DestLight.Color = FVector(LightColor);
-
-		DestLight.Dimensions = FVector(Light.SourceWidth, Light.SourceHeight, 0.0f);
-		DestLight.Attenuation = 1.0f / Light.AttenuationRadius;
-		DestLight.Shaping = FVector2D(FMath::Cos(FMath::DegreesToRadians(Light.BarnDoorAngle)), Light.BarnDoorLength);
-
-		if (Light.IESTexture)
-		{
-			DestLight.IESTextureSlice = IESLightProfilesMap.FindOrAdd(Light.IESTexture, IESLightProfilesMap.Num());
-		}
-		else
-		{
-			DestLight.IESTextureSlice = INDEX_NONE;
-		}
-
-		DestLight.Flags = PATHTRACER_FLAG_TRANSMISSION_MASK;
-		DestLight.Flags |= PATHTRACER_FLAG_LIGHTING_CHANNEL_MASK;
-		DestLight.Flags |= PATHTRACER_FLAG_CAST_SHADOW_MASK;
-		DestLight.Flags |= Light.bStationary ? PATHTRACER_FLAG_STATIONARY_MASK : 0;
-		DestLight.Flags |= PATHTRACING_LIGHT_RECT;
-
-		float Radius = Light.AttenuationRadius;
-		FVector Center = DestLight.Position;
-		FVector Normal = DestLight.Normal;
-		FVector Disc = FVector(
-			FMath::Sqrt(FMath::Clamp(1 - Normal.X * Normal.X, 0.0f, 1.0f)),
-			FMath::Sqrt(FMath::Clamp(1 - Normal.Y * Normal.Y, 0.0f, 1.0f)),
-			FMath::Sqrt(FMath::Clamp(1 - Normal.Z * Normal.Z, 0.0f, 1.0f))
-		);
-		// quad bbox is the bbox of the disc +  the tip of the hemisphere
-		// TODO: is it worth trying to account for barndoors? seems unlikely to cut much empty space since the volume _inside_ the barndoor receives light
-		FVector Tip = Center + Normal * Radius;
-		DestLight.BoundMin = Tip.ComponentMin(Center - Radius * Disc);
-		DestLight.BoundMax = Tip.ComponentMax(Center + Radius * Disc);
-	}
-
 	PassParameters->SceneLightCount = Lights.Num();
 	{
 		// Upload the buffer of lights to the GPU

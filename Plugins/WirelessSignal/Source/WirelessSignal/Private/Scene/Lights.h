@@ -5,7 +5,6 @@
 #include "EntityArray.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
-#include "Components/RectLightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "GeometryInterface.h"
 #include "Engine/MapBuildDataRegistry.h"
@@ -162,21 +161,6 @@ struct FPointLightBuildInfo : public FLocalLightBuildInfo
 
 using FPointLightRef = TEntityArray<FPointLightBuildInfo>::EntityRefType;
 
-struct FRectLightBuildInfo : public FLocalLightBuildInfo
-{
-	FRectLightBuildInfo(URectLightComponent* ComponentUObject);
-
-	URectLightComponent* ComponentUObject = nullptr;
-
-	FVector Position;
-	float AttenuationRadius;
-
-	virtual ULightComponent* GetComponentUObject() const override { return ComponentUObject; }
-	virtual bool AffectsBounds(const FBoxSphereBounds& InBounds) const override;
-};
-
-using FRectLightRef = TEntityArray<FRectLightBuildInfo>::EntityRefType;
-
 struct FDirectionalLightRenderState : public FLocalLightRenderState
 {
 	FDirectionalLightRenderState(UDirectionalLightComponent* DirectionalLightComponent);
@@ -211,26 +195,6 @@ struct FPointLightRenderState : public FLocalLightRenderState
 };
 
 using FPointLightRenderStateRef = TEntityArray<FPointLightRenderState>::EntityRefType;
-
-struct FRectLightRenderState : public FLocalLightRenderState
-{
-	FRectLightRenderState(URectLightComponent* ComponentUObject);
-
-	FLinearColor Color;
-	float AttenuationRadius;
-	FVector Position;
-	FVector Direction;
-	FVector Tangent;
-	float SourceWidth;
-	float SourceHeight;
-	float BarnDoorAngle;
-	float BarnDoorLength;
-	FTexture* IESTexture;
-
-	virtual FLightShaderParameters GetLightShaderParameters() const override;
-};
-
-using FRectLightRenderStateRef = TEntityArray<FRectLightRenderState>::EntityRefType;
 
 struct FSkyLightRenderState
 {
@@ -306,11 +270,9 @@ struct FLightScene
 	TOptional<FSkyLightBuildInfo> SkyLight;
 	TLightArray<FDirectionalLightBuildInfo> DirectionalLights;
 	TLightArray<FPointLightBuildInfo> PointLights;
-	TLightArray<FRectLightBuildInfo> RectLights;
 
 	TMap<UDirectionalLightComponent*, FDirectionalLightRef> RegisteredDirectionalLightComponentUObjects;
 	TMap<UPointLightComponent*, FPointLightRef> RegisteredPointLightComponentUObjects;
-	TMap<URectLightComponent*, FRectLightRef> RegisteredRectLightComponentUObjects;
 };
 
 struct FLightSceneRenderState
@@ -318,7 +280,6 @@ struct FLightSceneRenderState
 	TOptional<FSkyLightRenderState> SkyLight;
 	TLightRenderStateArray<FDirectionalLightRenderState> DirectionalLights;
 	TLightRenderStateArray<FPointLightRenderState> PointLights;
-	TLightRenderStateArray<FRectLightRenderState> RectLights;
 };
 
 }
@@ -343,22 +304,3 @@ static uint32 GetTypeHash(const WirelessSignal::FPointLightRenderStateRef& Ref)
 	return GetTypeHash(Ref.GetReference_Unsafe());
 }
 
-static uint32 GetTypeHash(const WirelessSignal::FRectLightRenderState& O)
-{
-	return HashCombine(GetTypeHash(O.Tangent), 
-		HashCombine(GetTypeHash(O.SourceWidth), 
-		HashCombine(GetTypeHash(O.SourceHeight), 
-		HashCombine(GetTypeHash(O.BarnDoorAngle),
-		HashCombine(GetTypeHash(O.BarnDoorLength),
-		HashCombine(GetTypeHash(O.Direction), 
-		HashCombine(GetTypeHash(O.AttenuationRadius), 
-		HashCombine(GetTypeHash(O.ShadowMapChannel),
-		HashCombine(GetTypeHash(O.Color), 
-		HashCombine(GetTypeHash(O.Position), 
-		GetTypeHash(O.bStationary)))))))))));
-}
-
-static uint32 GetTypeHash(const WirelessSignal::FRectLightRenderStateRef& Ref)
-{
-	return GetTypeHash(Ref.GetReference_Unsafe());
-}

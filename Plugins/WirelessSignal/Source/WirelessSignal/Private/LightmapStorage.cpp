@@ -207,10 +207,6 @@ bool FLightmapRenderState::IsTileShadowConverged(FTileVirtualCoordinates Coords,
 	{
 		bConverged &= Pair.Value >= NumShadowSamples;
 	}
-	for (auto& Pair : RetrieveTileRelevantLightSampleState(Coords).RelevantRectLightSampleCount)
-	{
-		bConverged &= Pair.Value >= NumShadowSamples;
-	}
 	return bConverged;
 }
 bool FLightmapRenderState::DoesTileHaveValidCPUData(FTileVirtualCoordinates Coords, int32 CurrentRevision)
