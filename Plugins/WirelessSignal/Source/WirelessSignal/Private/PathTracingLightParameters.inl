@@ -17,26 +17,7 @@ void SetupPathTracingLightParameters(
 {
 	TArray<FPathTracingLight> Lights;
 
-	// we didn't introduce sky light, hence, it allow false
-	/*
-	if (LightScene.SkyLight.IsSet())
-	{
-		FPathTracingLight& DestLight = Lights.AddDefaulted_GetRef();
-		DestLight.Color = FVector(LightScene.SkyLight->Color);
-		DestLight.Flags = PATHTRACER_FLAG_TRANSMISSION_MASK;
-		DestLight.Flags |= PATHTRACER_FLAG_LIGHTING_CHANNEL_MASK;
-		DestLight.Flags |= PATHTRACER_FLAG_CAST_SHADOW_MASK;
-		bool SkyLightIsStationary = LightScene.SkyLight->bStationary;
-		DestLight.Flags |= SkyLightIsStationary ? PATHTRACER_FLAG_STATIONARY_MASK : 0;
-		DestLight.Flags |= PATHTRACING_LIGHT_SKY;
-
-		PassParameters->SkylightTexture = GraphBuilder.RegisterExternalTexture(LightScene.SkyLight->PathTracingSkylightTexture, TEXT("PathTracer.Skylight"));
-		PassParameters->SkylightTextureSampler = TStaticSamplerState<SF_Bilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
-		PassParameters->SkylightPdf = GraphBuilder.RegisterExternalTexture(LightScene.SkyLight->PathTracingSkylightPdf, TEXT("PathTracer.SkylightPdf"));
-		PassParameters->SkylightInvResolution = LightScene.SkyLight->SkylightInvResolution;
-		PassParameters->SkylightMipCount = LightScene.SkyLight->SkylightMipCount;
-	}
-	else*/
+	// sky light is out of scope 
 	{
 		PassParameters->SkylightTexture = GraphBuilder.RegisterExternalTexture(GSystemTextures.BlackDummy);
 		PassParameters->SkylightTextureSampler = TStaticSamplerState<SF_Bilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
