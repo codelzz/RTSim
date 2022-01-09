@@ -181,16 +181,6 @@ void QuantizeLightSamples(
 
 		DestCoefficients.Coverage = SourceSample.bIsMapped ? 255 : 0;
 
-		const FVector BentNormal(SourceSample.SkyOcclusion[0], SourceSample.SkyOcclusion[1], SourceSample.SkyOcclusion[2]);
-		const float BentNormalLength = BentNormal.Size();
-		const FVector NormalizedBentNormal = BentNormal.GetSafeNormal() * FVector(.5f) + FVector(.5f);
-
-		DestCoefficients.SkyOcclusion[0] = (uint8)FMath::Clamp<int32>(FMath::RoundToInt(NormalizedBentNormal[0] * 255.0f), 0, 255);
-		DestCoefficients.SkyOcclusion[1] = (uint8)FMath::Clamp<int32>(FMath::RoundToInt(NormalizedBentNormal[1] * 255.0f), 0, 255);
-		DestCoefficients.SkyOcclusion[2] = (uint8)FMath::Clamp<int32>(FMath::RoundToInt(NormalizedBentNormal[2] * 255.0f), 0, 255);
-		// Sqrt on length to allocate more precision near 0
-		DestCoefficients.SkyOcclusion[3] = (uint8)FMath::Clamp<int32>(FMath::RoundToInt(FMath::Sqrt(BentNormalLength) * 255.0f), 0, 255);
-
 		// Sqrt to allocate more precision near 0
 		DestCoefficients.AOMaterialMask = (uint8)FMath::Clamp<int32>(FMath::RoundToInt(FMath::Sqrt(SourceSample.AOMaterialMask) * 255.0f), 0, 255);
 

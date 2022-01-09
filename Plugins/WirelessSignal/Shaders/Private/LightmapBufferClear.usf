@@ -17,7 +17,6 @@ RWTexture2D<float4> GBufferWorldNormal;
 RWTexture2D<float4> GBufferShadingNormal;
 RWTexture2D<float4> IrradianceAndSampleCount;
 RWTexture2D<float4> SHDirectionality;
-RWTexture2D<float4> SHCorrectionAndStationarySkyLightBentNormal;
 RWTexture2D<float4> ShadowMask;
 RWTexture2D<float4> ShadowMaskSampleCount;
 
@@ -50,7 +49,6 @@ void CopyConvergedLightmapTilesCS(uint3 DispatchThreadId : SV_DispatchThreadID)
 			float3 OutputColor = IrradianceAndSampleCount[TexelIndexInPool].rgb / SampleCount;
 			FL2SHAndCorrection SH;
 			SH.L2SHCoefficients = SHDirectionality[TexelIndexInPool] / SampleCount;
-			SH.Correction = SHCorrectionAndStationarySkyLightBentNormal[TexelIndexInPool].x / SampleCount;
 			
 			FinalizeLightmapIrradiance(OutputColor, SH, StagingHQLayer0[TexelIndexInStagingPool]);
 			FinalizeLightmapSH(OutputColor, SH, StagingHQLayer1[TexelIndexInStagingPool]);

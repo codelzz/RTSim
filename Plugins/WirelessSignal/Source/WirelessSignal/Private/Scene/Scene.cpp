@@ -29,7 +29,6 @@
 
 #define LOCTEXT_NAMESPACE "StaticLightingSystem"
 
-extern RENDERER_API void SetupSkyIrradianceEnvironmentMapConstantsFromSkyIrradiance(FVector4* OutSkyIrradianceEnvironmentMap, const FSHVectorRGB3 SkyIrradiance);
 extern ENGINE_API bool GCompressLightmaps;
 
 extern float GetTerrainExpandPatchCount(float LightMapRes, int32& X, int32& Y, int32 ComponentSize, int32 LightmapSize, int32& DesiredSize, uint32 LightingLOD);
@@ -508,80 +507,7 @@ bool FScene::HasLight(LightComponentType* PointLightComponent)
 template bool FScene::HasLight(UDirectionalLightComponent* LightComponent);
 template bool FScene::HasLight(UPointLightComponent* LightComponent);
 
-void FScene::AddLight(USkyLightComponent* SkyLight)
-{
-	if (LightScene.SkyLight.IsSet() && LightScene.SkyLight->ComponentUObject == SkyLight)
-	{
-		UE_LOG(LogWirelessSignal, Log, TEXT("Warning: duplicated component registration"));
-		return;
-	}
 
-	if (!SkyLight->GetProcessedSkyTexture())
-	{
-		UE_LOG(LogWirelessSignal, Log, TEXT("Skipping skylight with empty cubemap"));
-		return;
-	}
-
-	if (LightScene.SkyLight.IsSet())
-	{
-		UE_LOG(LogWirelessSignal, Log, TEXT("Warning: trying to add more than one skylight - removing the old one"));
-		RemoveLight(LightScene.SkyLight->ComponentUObject);
-	}
-
-	int32 LightId = INDEX_NONE;
-
-	FSkyLightBuildInfo NewSkyLight;
-	NewSkyLight.ComponentUObject = SkyLight;
-
-	LightScene.SkyLight = MoveTemp(NewSkyLight);
-
-	FSkyLightRenderState NewSkyLightRenderState;
-	NewSkyLightRenderState.bStationary = !SkyLight->HasStaticLighting();
-	NewSkyLightRenderState.Color = SkyLight->GetLightColor() * SkyLight->Intensity;
-	NewSkyLightRenderState.TextureDimensions = FIntPoint(SkyLight->GetProcessedSkyTexture()->GetSizeX(), SkyLight->GetProcessedSkyTexture()->GetSizeY());
-	NewSkyLightRenderState.IrradianceEnvironmentMap = SkyLight->GetIrradianceEnvironmentMap();
-
-	ENQUEUE_RENDER_COMMAND(AddLightRenderState)(
-		[&RenderState = RenderState, NewSkyLightRenderState = MoveTemp(NewSkyLightRenderState), ProcessedSkyTexture = SkyLight->GetProcessedSkyTexture()](FRHICommandListImmediate& RHICmdList) mutable
-	{
-		// Dereferencing ProcessedSkyTexture must be deferred onto render thread
-		NewSkyLightRenderState.ProcessedTexture = ProcessedSkyTexture->TextureRHI;
-		NewSkyLightRenderState.ProcessedTextureSampler = ProcessedSkyTexture->SamplerStateRHI;
-
-		NewSkyLightRenderState.SkyIrradianceEnvironmentMap.Initialize(sizeof(FVector4), 7, 0, TEXT("SkyIrradianceEnvironmentMap"));
-
-		NewSkyLightRenderState.PrepareSkyTexture(RHICmdList);
-
-		// Set the captured environment map data
-		void* DataPtr = RHICmdList.LockStructuredBuffer(NewSkyLightRenderState.SkyIrradianceEnvironmentMap.Buffer, 0, NewSkyLightRenderState.SkyIrradianceEnvironmentMap.NumBytes, RLM_WriteOnly);
-		SetupSkyIrradianceEnvironmentMapConstantsFromSkyIrradiance((FVector4*)DataPtr, NewSkyLightRenderState.IrradianceEnvironmentMap);
-		RHICmdList.UnlockStructuredBuffer(NewSkyLightRenderState.SkyIrradianceEnvironmentMap.Buffer);
-
-		RenderState.LightSceneRenderState.SkyLight = MoveTemp(NewSkyLightRenderState);
-
-		RenderState.LightmapRenderer->BumpRevision();
-	});
-}
-
-void FScene::RemoveLight(USkyLightComponent* SkyLight)
-{
-	if (!LightScene.SkyLight.IsSet() || LightScene.SkyLight->ComponentUObject != SkyLight)
-	{
-		return;
-	}
-
-	check(LightScene.SkyLight.IsSet());
-
-	LightScene.SkyLight.Reset();
-
-	ENQUEUE_RENDER_COMMAND(RemoveLightRenderState)(
-		[&RenderState = RenderState](FRHICommandListImmediate& RHICmdList) mutable
-	{
-		RenderState.LightSceneRenderState.SkyLight.Reset();
-
-		RenderState.LightmapRenderer->BumpRevision();
-	});
-}
 
 template<typename LightType, typename GeometryRefType>
 TArray<int32> AddAllPossiblyRelevantLightsToGeometry(
@@ -2826,11 +2752,6 @@ void FScene::RemoveAllComponents()
 	for (auto Light : RegisteredPointLightComponents)
 	{
 		RemoveLight(Light);
-	}
-
-	if (LightScene.SkyLight.IsSet())
-	{
-		RemoveLight(LightScene.SkyLight->ComponentUObject);
 	}
 }
 

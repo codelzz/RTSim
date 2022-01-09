@@ -15,9 +15,6 @@ struct FLightSampleData
 	{
 		bIsMapped = false;
 		FMemory::Memzero(Coefficients, sizeof(Coefficients));
-		SkyOcclusion[0] = 0;
-		SkyOcclusion[1] = 0;
-		SkyOcclusion[2] = 0;
 		AOMaterialMask = 0;
 	}
 
@@ -27,8 +24,6 @@ struct FLightSampleData
 	 * and Coefficients[2] stores the simple lightmap which is colored incident lighting along the vertex normal.
 	 */
 	float Coefficients[NUM_STORED_LIGHTMAP_COEF][3];
-
-	float SkyOcclusion[3];
 
 	float AOMaterialMask;
 
