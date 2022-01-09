@@ -17,7 +17,8 @@ void SetupPathTracingLightParameters(
 {
 	TArray<FPathTracingLight> Lights;
 
-	// sky light is out of scope 
+	// sky light is out of scope
+	
 	{
 		PassParameters->SkylightTexture = GraphBuilder.RegisterExternalTexture(GSystemTextures.BlackDummy);
 		PassParameters->SkylightTextureSampler = TStaticSamplerState<SF_Bilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
@@ -25,6 +26,7 @@ void SetupPathTracingLightParameters(
 		PassParameters->SkylightInvResolution = 0;
 		PassParameters->SkylightMipCount = 0;
 	}
+	
 	
 
 

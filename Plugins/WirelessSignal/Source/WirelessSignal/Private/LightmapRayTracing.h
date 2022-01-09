@@ -5,7 +5,6 @@
 #include "WirelessSignalCommon.h"
 #include "ShaderParameterStruct.h"
 #include "GlobalShader.h"
-// #include "RayTracing/RayTracingSkyLight.h"
 #include "SceneView.h"
 #include "RayTracing/RayTracingMaterialHitShaders.h"
 #include "IrradianceCaching.h"
@@ -74,7 +73,6 @@ class FLightmapPathTracingRGS : public FGlobalShader
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<float4>, GBufferShadingNormal)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, IrradianceAndSampleCount)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, SHDirectionality)
-		// SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, SHCorrectionAndStationarySkyLightBentNormal)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<uint>, RayGuidingLuminance)
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<float>, RayGuidingCDFX)
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<float>, RayGuidingCDFY)
@@ -90,7 +88,7 @@ class FLightmapPathTracingRGS : public FGlobalShader
 		SHADER_PARAMETER_SAMPLER(SamplerState, SkylightTextureSampler)
 		SHADER_PARAMETER(float, SkylightInvResolution)
 		SHADER_PARAMETER(int32, SkylightMipCount)
-
+		
 		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, ViewUniformBuffer)
 		SHADER_PARAMETER_STRUCT_REF(FIrradianceCachingParameters, IrradianceCachingParameters)
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2DArray, IESTexture)
@@ -148,7 +146,7 @@ class FVolumetricLightmapPathTracingRGS : public FGlobalShader
 		SHADER_PARAMETER_SAMPLER(SamplerState, SkylightTextureSampler)
 		SHADER_PARAMETER(float, SkylightInvResolution)
 		SHADER_PARAMETER(int32, SkylightMipCount)
-
+		
 		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, ViewUniformBuffer)
 		SHADER_PARAMETER_STRUCT_REF(FIrradianceCachingParameters, IrradianceCachingParameters)
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2DArray, IESTexture)
