@@ -11,5 +11,9 @@
 		}
 	],
 	"Plugins": [
+		{
+			"Name": "MovieRenderPipeline",
+			"Enabled": true
+		}
 	]
 }
